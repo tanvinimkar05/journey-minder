@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TransitWake - Smart Commute Alert & Fare Estimator</title>
+  <!-- Google Fonts: Outfit for Headers, Inter for Body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Local Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background Glow Accents -->
+  <div class="glow-sphere glow-1"></div>
+  <div class="glow-sphere glow-2"></div>
+
+  <!-- Header Section -->
+  <header>
+    <div class="header-container">
+      <div class="logo">
+        <i class="fa-solid fa-bell-slash logo-icon"></i>
+        <div class="logo-text">
+          <h1>TransitWake</h1>
+          <span>Smart Commute Alarm & RTO Fare Guide</span>
+        </div>
+      </div>
+      <div class="app-motto">
+        <span class="badge neon-blue-badge"><i class="fa-solid fa-bolt"></i> Nagpur Edition</span>
+        <span class="motto-text">Sleep soundly, travel safely, pay fairly.</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Dashboard Container -->
+  <main class="dashboard">
+
+    <!-- COLUMN 1: Mock Smartphone (Visual Prototype) -->
+    <section class="column phone-column" aria-label="Mobile App Preview">
+      <div class="device-wrapper">
+        <div class="smartphone">
+          <!-- Smartphone Notch / Dynamic Island -->
+          <div class="notch">
+            <div class="camera"></div>
+            <div class="speaker"></div>
+          </div>
+          
+          <!-- Screen Status Bar -->
+          <div class="status-bar">
+            <span class="status-time" id="phone-time">16:54</span>
+            <div class="status-icons">
+              <i class="fa-solid fa-wifi"></i>
+              <i class="fa-solid fa-signal"></i>
+              <span class="battery-pct">88%</span>
+              <i class="fa-solid fa-battery-three-quarters"></i>
+            </div>
+          </div>
+
+          <!-- Smartphone Screens Container -->
+          <div class="phone-screen">
+            
+            <!-- SCREEN 1: Home/Setup Screen -->
+            <div class="app-screen active" id="screen-home">
+              <div class="app-header">
+                <span class="greeting">Nagpur Transit Sentry</span>
+                <h2>Setup Alert</h2>
+              </div>
+
+              <!-- Quick Mode Selectors -->
+              <div class="mode-selector">
+                <button class="mode-btn active" id="mode-bus-btn" onclick="switchTransitMode('bus')">
+                  <i class="fa-solid fa-bus"></i>
+                  <span>Bus</span>
+                </button>
+                <button class="mode-btn" id="mode-metro-btn" onclick="switchTransitMode('metro')">
+                  <i class="fa-solid fa-train-subway"></i>
+                  <span>Metro</span>
+                </button>
+                <button class="mode-btn" id="mode-cab-btn" onclick="switchTransitMode('cab')">
+                  <i class="fa-solid fa-taxi"></i>
+                  <span>Auto/Cab</span>
+                </button>
+              </div>
+
+              <!-- Configuration Card -->
+              <div class="phone-card setup-card">
+                <h3><i class="fa-solid fa-route text-cyan"></i> Journey Planner</h3>
+                
+                <div class="input-group">
+                  <label for="phone-route-select">Select Commute Route</label>
+                  <select id="phone-route-select" onchange="loadPresetRoute(this.value)">
+                    <!-- Populated dynamically via JS -->
+                  </select>
+                </div>
+
+                <div class="input-group">
+                  <label for="phone-destination-select">Choose Destination Stop</label>
+                  <select id="phone-destination-select">
+                    <!-- Populated dynamically via JS -->
+                  </select>
+                </div>
+
+                <div class="input-group row-group">
+                  <div>
+                    <label for="alert-buffer-stops">Pre-Alert Buffer</label>
+                    <select id="alert-buffer-stops">
+                      <option value="1">1 Stop Before</option>
+                      <option value="2" selected>2 Stops Before</option>
+                      <option value="3">3 Stops Before</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="alarm-profile">Nap Profile</label>
+                    <select id="alarm-profile">
+                      <option value="light">Light Snooze</option>
+                      <option value="deep" selected>Deep Sleep</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Alarm Audio Settings -->
+              <div class="phone-card sound-card">
+                <h3><i class="fa-solid fa-music text-gold"></i> Custom Wake-Up Tune</h3>
+                <div class="audio-tune-row">
+                  <select id="alarm-ringtone" class="dark-select">
+                    <option value="melody">Morning Sunrise (Synthetic)</option>
+                    <option value="siren">Energetic Alert (Synth Siren)</option>
+                    <option value="chime">Gentle Zen Chimes</option>
+                    <option value="custom">NapGuard Custom Riff</option>
+                  </select>
+                  <button class="btn-icon" onclick="playSampleSound()" title="Test Sound">
+                    <i class="fa-solid fa-play" id="sample-play-icon"></i>
+                  </button>
+                </div>
+                <div class="mute-feature-note">
+                  <i class="fa-solid fa-volume-xmark text-red"></i>
+                  <span><strong>Mute Bypass:</strong> App will synthesize max volume audio beep & vibrate even if hardware switch is set to mute.</span>
+                </div>
+              </div>
+
+              <!-- Action Button -->
+              <button class="btn-primary" onclick="startTrackingTrip()">
+                <i class="fa-solid fa-moon"></i> Start Safe Snooze
+              </button>
+            </div>
+
+            <!-- SCREEN 2: Live Tracking Screen -->
+            <div class="app-screen" id="screen-tracking">
+              <div class="app-header tracking-header">
+                <span class="pill active-trip-pill">SNOOZING ACTIVE</span>
+                <button class="btn-cancel-trip" onclick="abortTrip()">Abort</button>
+              </div>
+
+              <div class="tracking-summary">
+                <span class="tracking-route-name" id="track-route-title">Sitabuldi to Hingna</span>
+                <div class="tracking-eta">
+                  <div class="eta-box">
+                    <span class="eta-val" id="track-eta-min">14</span>
+                    <span class="eta-lbl">Mins Left</span>
+                  </div>
+                  <div class="eta-divider"></div>
+                  <div class="eta-box">
+                    <span class="eta-val text-cyan" id="track-stops-left">5</span>
+                    <span class="eta-lbl">Stops Away</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Progress Visualizer inside phone -->
+              <div class="phone-card progress-card">
+                <div class="progress-ring-container">
+                  <svg class="progress-ring" width="120" height="120">
+                    <circle class="progress-ring-bg" stroke="rgba(255,255,255,0.07)" stroke-width="8" fill="transparent" r="50" cx="60" cy="60"/>
+                    <circle class="progress-ring-bar" id="tracking-progress-circle" stroke="var(--cyan)" stroke-width="8" stroke-dasharray="314.15" stroke-dashoffset="314.15" fill="transparent" r="50" cx="60" cy="60"/>
+                  </svg>
+                  <div class="progress-inner-text">
+                    <span class="pct-val" id="tracking-pct-text">0%</span>
+                    <span class="pct-lbl">Journey</span>
+                  </div>
+                </div>
+                
+                <div class="next-stop-marquee">
+                  <span class="lbl">NEXT STOP</span>
+                  <strong class="val" id="track-next-stop">Lokmanya Nagar</strong>
+                </div>
+              </div>
+
+              <!-- Live Status Cards -->
+              <div class="phone-card status-mini-card">
+                <div class="status-indicator-row">
+                  <div class="status-indicator">
+                    <span class="dot pulse-dot cyan-dot"></span>
+                    <span>GPS Signal Locked</span>
+                  </div>
+                  <div class="status-indicator">
+                    <i class="fa-solid fa-volume-high text-cyan"></i>
+                    <span>Alarm Sentry Armed</span>
+                  </div>
+                </div>
+                <div class="safety-share-banner">
+                  <button class="btn-secondary btn-sm" onclick="simulateShareSOS()">
+                    <i class="fa-solid fa-share-nodes"></i> Share Live Location
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick snooze control -->
+              <button class="btn-primary btn-orange" onclick="triggerImmediateAlertSim()">
+                <i class="fa-solid fa-radiation"></i> Test Warning Screen
+              </button>
+            </div>
+
+            <!-- SCREEN 3: Alarm Alert Screen (Wake up sequence) -->
+            <div class="app-screen" id="screen-alarm">
+              <div class="alarm-fullscreen-glow">
+                <div class="radar-ping"></div>
+                <div class="radar-ping second-ping"></div>
+                
+                <div class="alarm-alert-icon">
+                  <i class="fa-solid fa-bell-exclamation alarm-bell-animated"></i>
+                </div>
+
+                <div class="alarm-message-container">
+                  <span class="alarm-alert-badge">SENTRY ALARM ACTIVE</span>
+                  <h2 class="alarm-alert-msg" id="alarm-main-msg">WAKE UP!</h2>
+                  <p class="alarm-sub-msg" id="alarm-sub-msg">Your stop "Lokmanya Nagar" is coming up in 2 stops.</p>
+                </div>
+
+                <!-- Bypass Mute Visual Indicator -->
+                <div class="mute-bypass-banner">
+                  <i class="fa-solid fa-volume-up pulse-volume"></i>
+                  <span>Mute Bypass Active: Beeping at Max Volume</span>
+                </div>
+
+                <div class="alarm-actions">
+                  <button class="btn-snooze" onclick="snoozeAlarm()">Snooze (1 Min)</button>
+                  <button class="btn-dismiss" onclick="dismissAlarm()">I am Awake</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- SCREEN 4: Fare Estimator Screen -->
+            <div class="app-screen" id="screen-fare">
+              <div class="app-header">
+                <h2>RTO Fare Guard</h2>
+                <p>Prevent auto & cab overcharging in Nagpur</p>
+              </div>
+
+              <div class="phone-card fare-input-card">
+                <div class="input-group">
+                  <label for="fare-travel-type">Vehicle Type</label>
+                  <select id="fare-travel-type" class="dark-select" onchange="calculateFare()">
+                    <option value="auto">Nagpur RTO Auto (Three-Wheeler)</option>
+                    <option value="cab-mini">Cab Mini (e.g. Indica/WagonR)</option>
+                    <option value="cab-sedan">Cab Sedan (e.g. Dzire/Etios)</option>
+                  </select>
+                </div>
+
+                <div class="input-group">
+                  <label for="fare-distance">Distance of Journey (km)</label>
+                  <div class="input-with-suffix">
+                    <input type="number" id="fare-distance" value="5" min="0.5" step="0.1" oninput="calculateFare()">
+                    <span>KM</span>
+                  </div>
+                </div>
+
+                <div class="input-group row-group">
+                  <div>
+                    <label>Timing Mode</label>
+                    <div class="fare-toggle-group">
+                      <button class="toggle-btn active" id="btn-day-fare" onclick="setFareNight(false)">Day Rate</button>
+                      <button class="toggle-btn" id="btn-night-fare" onclick="setFareNight(true)">Night Rate</button>
+                    </div>
+                  </div>
+                  <div>
+                    <label for="fare-luggage">Luggage Items</label>
+                    <input type="number" id="fare-luggage" value="0" min="0" max="10" oninput="calculateFare()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Computed Receipt Ticket -->
+              <div class="phone-card receipt-card">
+                <div class="receipt-header">
+                  <span>OFFICIAL RTO RATE CARD</span>
+                  <strong>NAGPUR CITY RTO</strong>
+                </div>
+                <div class="receipt-divider"></div>
+                <div class="receipt-row">
+                  <span>Base Fare (First 1.5 km)</span>
+                  <span id="rec-base-fare">₹23.00</span>
+                </div>
+                <div class="receipt-row">
+                  <span>Distance Fare (<span id="rec-km-lbl">3.5</span> km)</span>
+                  <span id="rec-dist-fare">₹53.65</span>
+                </div>
+                <div class="receipt-row">
+                  <span>Night Surcharge (25%)</span>
+                  <span id="rec-night-surcharge">₹0.00</span>
+                </div>
+                <div class="receipt-row">
+                  <span>Luggage Charges</span>
+                  <span id="rec-luggage-fare">₹0.00</span>
+                </div>
+                <div class="receipt-divider"></div>
+                <div class="receipt-row total-row">
+                  <span>RTO Standard Fare</span>
+                  <strong class="text-gold" id="rec-total-fare">₹76.65</strong>
+                </div>
+                <div class="receipt-row driver-demand-row">
+                  <span>Typical Driver Quote</span>
+                  <span class="text-red font-strike" id="rec-driver-quote">₹120 - ₹150</span>
+                </div>
+                <div class="receipt-footer">
+                  <p><i class="fa-solid fa-triangle-exclamation"></i> Show this receipt card to the driver to challenge inflated quotes.</p>
+                </div>
+              </div>
+
+              <div class="fare-actions">
+                <button class="btn-primary" onclick="simulateFareReceiptShare()">
+                  <i class="fa-solid fa-file-invoice-dollar"></i> Share RTO Receipt
+                </button>
+                <button class="btn-secondary" onclick="showHomeScreen()">
+                  <i class="fa-solid fa-home"></i> Back to Alerts
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Navigation Bar of the smartphone -->
+          <nav class="phone-navbar">
+            <button class="nav-item active" id="nav-home" onclick="phoneNavigate('home')">
+              <i class="fa-solid fa-bell"></i>
+              <span>Alarms</span>
+            </button>
+            <button class="nav-item" id="nav-fare" onclick="phoneNavigate('fare')">
+              <i class="fa-solid fa-indian-rupee-sign"></i>
+              <span>Fare Guard</span>
+            </button>
+            <button class="nav-item" id="nav-demo-alert" onclick="triggerImmediateAlertSim()">
+              <i class="fa-solid fa-circle-exclamation text-orange"></i>
+              <span>Test Alarm</span>
+            </button>
+          </nav>
+        </div>
+      </div>
+    </section>
+
+    <!-- COLUMN 2: Simulator Panel (Controls web environment & visualizes path) -->
+    <section class="column simulator-column" aria-label="Simulator Controls">
+      <div class="glass-card main-simulator">
+        <div class="card-header">
+          <h2><i class="fa-solid fa-sliders text-cyan"></i> Live Trip Simulator</h2>
+          <span class="badge neon-purple-badge">Control Hub</span>
+        </div>
+
+        <div class="simulation-dashboard">
+          <div class="sim-row">
+            <div class="sim-control-group">
+              <label><i class="fa-solid fa-gears"></i> Engine Controls</label>
+              <div class="sim-buttons">
+                <button class="btn-sim start-btn" id="sim-play-pause-btn" onclick="toggleSimPlayPause()" disabled>
+                  <i class="fa-solid fa-play"></i> Play Journey
+                </button>
+                <button class="btn-sim reset-btn" onclick="resetSim()" disabled id="sim-reset-btn">
+                  <i class="fa-solid fa-rotate-left"></i> Reset
+                </button>
+              </div>
+            </div>
+
+            <div class="sim-control-group">
+              <label for="sim-speed"><i class="fa-solid fa-gauge-high"></i> Simulation Speed</label>
+              <div class="sim-slider-row">
+                <input type="range" id="sim-speed" min="1" max="10" value="3" oninput="updateSimSpeed(this.value)">
+                <span id="sim-speed-lbl">3x Speed</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stylized Interactive Map and Route Progress -->
+          <div class="map-container">
+            <div class="map-header">
+              <span><i class="fa-solid fa-map-location-dot"></i> Stylized Nagpur Transit Map</span>
+              <div class="map-gps-indicator">
+                <span class="dot green-dot pulse-dot"></span>
+                <span>GPS Simulation Active</span>
+              </div>
+            </div>
+            
+            <div class="map-canvas-wrapper">
+              <canvas id="nagpur-map" width="550" height="230"></canvas>
+              
+              <!-- Floating Notification Toast -->
+              <div class="simulator-toast" id="sim-toast">
+                <i class="fa-solid fa-info-circle text-cyan"></i>
+                <span id="sim-toast-text">Select a route and tap "Start Safe Snooze" on the phone app.</span>
+              </div>
+            </div>
+
+            <!-- Route Stop Timeline -->
+            <div class="route-timeline-container">
+              <span class="timeline-title">Route Stops Timeline Progress</span>
+              <div class="route-timeline" id="route-timeline-list">
+                <!-- Populated dynamically via JS -->
+                <span class="timeline-empty-msg">No active route selected. Set up your trip on the phone app to begin.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advanced Diagnostics Console -->
+          <div class="diagnostic-console">
+            <div class="console-header">
+              <span><i class="fa-solid fa-terminal text-green"></i> System Live Log</span>
+              <button class="btn-clear-console" onclick="clearConsole()">Clear Logs</button>
+            </div>
+            <div class="console-output" id="console-log">
+              <div class="log-line system-line">[SYSTEM] Ready. Select Nagpur Transit Route on the phone interface.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COLUMN 3: Research, Restrictions, Alternatives & Nagpur Local Guide -->
+    <section class="column analytics-column" aria-label="Research and Analysis">
+      <div class="tab-container">
+        <!-- Tab Headers -->
+        <div class="tab-headers">
+          <button class="tab-btn active" id="tab-btn-restrictions" onclick="switchAnalyticsTab('tab-restrictions')">
+            <i class="fa-solid fa-ban"></i> Restrictions & Native Alts
+          </button>
+          <button class="tab-btn" id="tab-btn-feasibility" onclick="switchAnalyticsTab('tab-feasibility')">
+            <i class="fa-solid fa-chart-line"></i> Risk & Feasibility
+          </button>
+          <button class="tab-btn" id="tab-btn-nagpur" onclick="switchAnalyticsTab('tab-nagpur')">
+            <i class="fa-solid fa-map-pin"></i> Nagpur RTO Guide
+          </button>
+        </div>
+
+        <!-- Tab 1: Web Restrictions & Native Alternatives -->
+        <div class="tab-content active" id="tab-restrictions">
+          <div class="glass-card inner-card">
+            <h3><i class="fa-solid fa-circle-nodes text-cyan"></i> Web Sandbox Constraints & Alternatives</h3>
+            <p class="tab-intro">Web browsers operate inside strict sandboxes. Building a background stop-alert application directly in a mobile web browser presents distinct challenges. Below are the restrictions and how native alternatives solve them:</p>
+
+            <div class="restriction-grid">
+              
+              <!-- Restriction Card 1 -->
+              <div class="restriction-card">
+                <div class="rest-title-row">
+                  <i class="fa-solid fa-volume-xmark text-red"></i>
+                  <h4>Autoplay & Mute Control Sideloading</h4>
+                </div>
+                <p class="rest-desc"><strong>Web Restriction:</strong> Browsers restrict audio playback unless triggered by direct user interaction first. Furthermore, browsers cannot bypass physical hardware mute toggles (silent mode) or sleep-mode audio restrictions.</p>
+                <div class="native-alt">
+                  <span class="alt-lbl"><i class="fa-solid fa-circle-check text-green"></i> Native Solution:</span>
+                  <p>Native apps (Java/Kotlin, Swift) access custom audio channels. They utilize the <strong>Alarm Audio Stream</strong> (which bypasses silent mode) and request <strong>Critical Alarm Permissions</strong> to ring at maximum volume even on Do Not Disturb (DND).</p>
+                </div>
+              </div>
+
+              <!-- Restriction Card 2 -->
+              <div class="restriction-card">
+                <div class="rest-title-row">
+                  <i class="fa-solid fa-battery-quarter text-orange"></i>
+                  <h4>Background GPS Suspensions</h4>
+                </div>
+                <p class="rest-desc"><strong>Web Restriction:</strong> If a mobile user locks their screen or switches tabs, the browser immediately throttles Javascript execution. Geolocation tracking halts, and timers suspend, making the app fail to alert you.</p>
+                <div class="native-alt">
+                  <span class="alt-lbl"><i class="fa-solid fa-circle-check text-green"></i> Native Solution:</span>
+                  <p>Native platforms support <strong>Foreground Services</strong> (Android) and <strong>Background Location Updates</strong> (iOS) with geofencing. The OS actively wakes up the app when the user enters the predefined GPS radius, consuming minimal battery.</p>
+                </div>
+              </div>
+
+              <!-- Restriction Card 3 -->
+              <div class="restriction-card">
+                <div class="rest-title-row">
+                  <i class="fa-solid fa-bell text-gold"></i>
+                  <h4>Reliable Haptic & Vibration Loops</h4>
+                </div>
+                <p class="rest-desc"><strong>Web Restriction:</strong> While `navigator.vibrate` exists in HTML5, it is heavily restricted or entirely unsupported (e.g., iOS Safari completely blocks vibration). It also cannot trigger in the background.</p>
+                <div class="native-alt">
+                  <span class="alt-lbl"><i class="fa-solid fa-circle-check text-green"></i> Native Solution:</span>
+                  <p>Native APIs tap directly into the phone's tactile vibration engine (`VibratorManager` on Android and `UIFeedbackGenerator` on iOS), enabling custom pulsing rhythms that penetrate deep sleep.</p>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Native Bridge Concept -->
+            <div class="native-bridge-box">
+              <h4><i class="fa-solid fa-code text-cyan"></i> Native Wrapper Alternative (Capacitor/Cordova)</h4>
+              <p>To deploy this app onto app stores, one should wrap it in a native shell. Below is a code architecture showing how the app triggers a <strong>System Alarm Notification</strong> bypassing Web limitations:</p>
+              <pre class="code-snippet">
+<code>// Native Capacitor Bridge for Background Alarm Alert
+import { LocalNotifications } from '@capacitor/local-notifications';
+
+async function triggerBypassingAlarm(stopName) {
+  await LocalNotifications.schedule({
+    notifications: [{
+      title: "TransitWake ALERT!",
+      body: `Wake Up! ${stopName} is approaching!`,
+      id: 101,
+      sound: "critical_siren.wav", // Placed in native assets
+      channelId: "critical-alerts", // Android critical audio channel
+      ios: {
+        critical: true, // Bypass iOS ring/silent switch
+        volume: 1.0     // Max volume
+      },
+      vibration: [0, 500, 200, 500, 200, 1000] // Powerful pulse
+    }]
+  });
+}</code>
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Feasibility Study & Financial Risk Analysis -->
+        <div class="tab-content" id="tab-feasibility">
+          <div class="glass-card inner-card">
+            <h3><i class="fa-solid fa-square-poll-vertical text-gold"></i> Feasibility Study & Business Risk Matrix</h3>
+            <p class="tab-intro">Is TransitWake a viable commercial product? Launching an app like this faces real-world hurdles. Adjust the interactive risk dials to see how project changes affect feasibility:</p>
+
+            <!-- Dynamic Risk Dial Section -->
+            <div class="risk-dashboard">
+              <div class="risk-sliders">
+                
+                <div class="risk-control">
+                  <div class="lbl-row">
+                    <span class="lbl">GPS Signal Accuracy (Nagpur City)</span>
+                    <strong class="val" id="risk-val-gps">Medium</strong>
+                  </div>
+                  <input type="range" min="1" max="3" value="2" id="risk-slider-gps" oninput="recomputeRisk()">
+                  <p class="explanation">Low signals inside Nagpur underground metro, or dense markets like Itwari, degrade geofencing triggers.</p>
+                </div>
+
+                <div class="risk-control">
+                  <div class="lbl-row">
+                    <span class="lbl">Background Battery Optimization</span>
+                    <strong class="val" id="risk-val-battery">Aggressive</strong>
+                  </div>
+                  <input type="range" min="1" max="3" value="3" id="risk-slider-battery" oninput="recomputeRisk()">
+                  <p class="explanation">Modern phones aggressively kill background geolocation apps. Requires complicated user manual setup guidance.</p>
+                </div>
+
+                <div class="risk-control">
+                  <div class="lbl-row">
+                    <span class="lbl">Auto Union & Driver Pushback</span>
+                    <strong class="val" id="risk-val-driver">High</strong>
+                  </div>
+                  <input type="range" min="1" max="3" value="3" id="risk-slider-driver" oninput="recomputeRisk()">
+                  <p class="explanation">Auto drivers in Nagpur often refuse standard meter/RTO rates (especially at night) and may boycott users showing rate cards.</p>
+                </div>
+
+              </div>
+
+              <!-- Computed Feasibility Score -->
+              <div class="feasibility-score-box">
+                <span class="lbl">PROJECT FEASIBILITY SCORE</span>
+                <div class="score-display">
+                  <strong id="feasibility-pct">62%</strong>
+                  <span id="feasibility-badge" class="badge badge-warning">Moderate Risk</span>
+                </div>
+                <div class="financial-loss-warning">
+                  <h5><i class="fa-solid fa-circle-exclamation text-orange"></i> Risk of Financial Loss</h5>
+                  <p id="feasibility-loss-desc">High risk of customer churn if the alarm fails to wake them up just once. Monetizing via ads yields low returns, while subscription models struggle with competition from Google Maps which has free (but silent) travel tracking.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Project Difficulties & Solutions Table -->
+            <div class="feasibility-table-wrapper">
+              <h4>Core Challenges vs. Engineering Remedies</h4>
+              <table class="feasibility-table">
+                <thead>
+                  <tr>
+                    <th>Critical Problem / Obstacle</th>
+                    <th>Financial / User Loss</th>
+                    <th>Engineering Solution / Alternative</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Commuter Sleeps Through Alarm</strong></td>
+                    <td>High. User misses stop, gets lost, leaves a 1-star review.</td>
+                    <td>Implement progressive volume scale and speech synth repeating the destination stop name in local languages (Hindi/Marathi).</td>
+                  </tr>
+                  <tr>
+                    <td><strong>GPS Drift / Location Jumping</strong></td>
+                    <td>Triggers false alarm early, or triggers too late after the stop.</td>
+                    <td>Use multi-sensor fusion combining GPS with Cellular Triangulation, accelerometer motion, and route timetables.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>App Killed by Operating System</strong></td>
+                    <td>System stops tracking. User gets no warning whatsoever.</td>
+                    <td>Configure persistent OS sticky notifications, and run a foreground service with a permanent status bar icon.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Driver Charging Resistance</strong></td>
+                    <td>Threat of altercation. User gets harassed.</td>
+                    <td>Add a "Report to Nagpur RTO / Police" button. Display emergency contacts (Nagpur Police Helpline) on the receipt page.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Tab 3: Nagpur Local Transport & RTO Guide -->
+        <div class="tab-content" id="tab-nagpur">
+          <div class="glass-card inner-card">
+            <h3><i class="fa-solid fa-map-pin text-orange"></i> Nagpur Local Transport Guide</h3>
+            <p class="tab-intro">Official RTO fare models and preset landmarks in Nagpur. This lookup guide provides commuters with standardized fare information to combat overcharging:</p>
+
+            <div class="nagpur-rates-summary">
+              <div class="rate-badge">
+                <span class="vehicle">AUTO RTO RATE</span>
+                <strong class="price">₹23.00</strong>
+                <span class="unit">First 1.5 km</span>
+                <span class="extra">₹15.33/km after</span>
+              </div>
+              <div class="rate-badge">
+                <span class="vehicle">NIGHT SURCHARGE</span>
+                <strong class="price">+25%</strong>
+                <span class="unit">11:00 PM – 5:00 AM</span>
+                <span class="extra">RTO Mandated</span>
+              </div>
+              <div class="rate-badge">
+                <span class="vehicle">LUGGAGE</span>
+                <strong class="price">₹3.00</strong>
+                <span class="unit">Per major bag</span>
+                <span class="extra">Standard Handbag Free</span>
+              </div>
+            </div>
+
+            <!-- Predefined Nagpur Routes Table -->
+            <div class="routes-reference-box">
+              <h4>Popular Nagpur Commutes & Fair Estimates</h4>
+              <table class="routes-table">
+                <thead>
+                  <tr>
+                    <th>From (Origin)</th>
+                    <th>To (Destination)</th>
+                    <th>Distance (km)</th>
+                    <th>Standard Auto Fare</th>
+                    <th>Typical Driver Quote</th>
+                    <th>Saved by TransitWake</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Nagpur Junction Railway Station</td>
+                    <td>VNIT Wardha Road</td>
+                    <td>6.8 km</td>
+                    <td>₹104.00</td>
+                    <td>₹180 - ₹200</td>
+                    <td class="text-green font-bold">~ ₹80.00</td>
+                  </tr>
+                  <tr>
+                    <td>Sitabuldi Interchange Metro</td>
+                    <td>Hingna MIDC (Lokmanya Nagar)</td>
+                    <td>11.2 km</td>
+                    <td>₹171.00</td>
+                    <td>₹250 - ₹300</td>
+                    <td class="text-green font-bold">~ ₹100.00</td>
+                  </tr>
+                  <tr>
+                    <td>Dr. Babasaheb Ambedkar Airport</td>
+                    <td>IT Park Gayatri Nagar</td>
+                    <td>5.2 km</td>
+                    <td>₹80.00</td>
+                    <td>₹150 - ₹180</td>
+                    <td class="text-green font-bold">~ ₹85.00</td>
+                  </tr>
+                  <tr>
+                    <td>Ram Jhula (Station Road)</td>
+                    <td>Sambhaji Nagar</td>
+                    <td>9.0 km</td>
+                    <td>₹138.00</td>
+                    <td>₹220 - ₹250</td>
+                    <td class="text-green font-bold">~ ₹95.00</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="nagpur-helpline-box">
+              <h4><i class="fa-solid fa-phone-volume text-red"></i> Nagpur Transit Emergency Helpline Contacts</h4>
+              <div class="helpline-grid">
+                <div class="helpline-item">
+                  <span>Nagpur Police Control Room</span>
+                  <strong>100 / 0712-2566608</strong>
+                </div>
+                <div class="helpline-item">
+                  <span>Nagpur Traffic Police Help</span>
+                  <strong>1095</strong>
+                </div>
+                <div class="helpline-item">
+                  <span>Starbus (Maha StarBus Help)</span>
+                  <strong>1800 270 0999</strong>
+                </div>
+                <div class="helpline-item">
+                  <span>Maha Metro Nagpur Helpline</span>
+                  <strong>1800 270 0555</strong>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Interactive Popups / Modals -->
+  <div class="modal-overlay" id="share-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-share-nodes text-cyan"></i> Live Location Shared!</h3>
+        <button class="close-btn" onclick="closeModal('share-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p>Your safety is our priority. A secure tracking link has been copied to your clipboard:</p>
+        <div class="clipboard-box">
+          <input type="text" id="clipboard-link" readonly value="https://transitwake.in/share/live?id=TW982&user=NagpurCommuter">
+          <button class="btn-copy" onclick="copyClipboard()"><i class="fa-solid fa-copy"></i> Copy</button>
+        </div>
+        <p class="modal-hint">You can send this via WhatsApp/SMS to your family. It shows your live GPS coordinates, vehicle type, and the destination stop with real-time ETA.</p>
+        
+        <div class="share-options">
+          <button class="share-btn whatsapp" onclick="closeModal('share-modal')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+          <button class="share-btn sms" onclick="closeModal('share-modal')"><i class="fa-solid fa-comment-sms"></i> Send SMS</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="receipt-modal">
+    <div class="modal-card receipt-modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-print text-gold"></i> RTO Official Rate Receipt</h3>
+        <button class="close-btn" onclick="closeModal('receipt-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="modal-receipt-body">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Print Ticket</button>
+        <button class="btn-secondary btn-sm" onclick="closeModal('receipt-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Banner -->
+  <div class="alert-banner" id="global-alert-banner">
+    <i class="fa-solid fa-bell-ring alert-icon"></i>
+    <span id="global-alert-text">Sentry warning is active!</span>
+  </div>
+
+  <footer>
+    <p>Designed with premium aesthetics by Antigravity © 2026. All calculations follow Nagpur City RTO tariff policies. Alarms simulated via Web Audio & Web Speech APIs.</p>
+  </footer>
+
+  <!-- App Logic File -->
+  <script src="app.js"></script>
+</body>
+</html>
