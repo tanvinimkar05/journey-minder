@@ -1,0 +1,52 @@
+========================================================================
+             TRANSITWAKE (JOURNEY MINDER) - SEARCH ENGINE GUIDE
+========================================================================
+
+This file explains how the destination search, landmark lookup, and geofencing coordinates matching work in the TransitWake (Journey Minder) app.
+
+1. DESTINATION SEARCH ALGORITHM
+--------------------------------
+When a commuter searches for a stop (e.g., "Airport" or "Hingna"), the app runs an autocomplete filter against the Nagpur Transit Node Database.
+
+Search scoring criteria:
+  - Exact match (Score: 100)
+  - Prefix match (Score: 80)
+  - Substring match (Score: 60)
+  - Phonetic match (Soundex mapping for local Marathi/Hindi names like "Sitabuldi" -> "Seetabuldi")
+
+2. SEARCH SEARCHABLE LANDMARKS INDEX (NAGPUR CITY)
+---------------------------------------------------
+This search index maps popular landmarks to their nearest transit stop nodes for quick routing:
+
+  Landmark Name                   | Nearest Transit Node
+  -------------------------------------------------------------
+  VNIT Nagpur / Wardha Road       | VNIT Gate (Bus) / Congress Nagar (Metro)
+  Zero Mile Stone                 | Zero Mile (Cab) / Sitabuldi (Metro)
+  Nagpur Railway Station          | Nagpur Junction Stn (Cab)
+  Dr. Babasaheb Ambedkar Airport  | Airport Metro Station (Metro)
+  Gayatri Nagar IT Park           | IT Park Gayatri Nagar (Cab)
+  Deekshabhoomi Temple            | Deekshabhoomi (Cab)
+  Hingna Industrial Area (MIDC)   | Hingna MIDC (Bus) / Lokmanya Nagar (Bus)
+  Jhansi Rani Square Market       | Jhansi Rani Square (Bus)
+  Dharampeth Shopping Street      | Dharampeth (Bus)
+  Khapri Industrial Zone          | Khapri Metro Station (Metro)
+  Ram Jhula Bridge                | Ram Jhula (Cab)
+
+3. GEOFENCE COORDINATE MATCHING (SEARCH RADIUS)
+------------------------------------------------
+The geofence search radius triggers alerts based on the distance between the user's current GPS coordinate (longitude, latitude) and the target destination node coordinate:
+
+Formula (Haversine Formula for distance):
+  d = 2 * R * asin(sqrt(sin^2(Δlat/2) + cos(lat1) * cos(lat2) * sin^2(Δlon/2)))
+  Where R = 6371 km (Earth's radius).
+
+Alert trigger thresholds:
+  - Pre-Alert Zone: Triggered when distance d <= 1.5 km (or 2 stops away in fixed route tracking).
+  - Wakeup Geofence: Triggered when distance d <= 400 meters.
+  - Safe Exit Warning: Triggered when distance d <= 100 meters.
+
+4. LOCAL LANGUAGE SEARCH TERMS
+-------------------------------
+To assist travelers unfamiliar with local routes, the search bar accepts transliterated synonyms:
+  - English: "Airport", "Station", "Market", "IT Park"
+  - Marathi/Hindi: "Viman-tala" (Airport), "Raily-station" (Station), "Itwari-bazar" (Market), "Naka" (Toll/Border)

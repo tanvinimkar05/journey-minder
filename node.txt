@@ -1,0 +1,68 @@
+========================================================================
+             TRANSITWAKE (JOURNEY MINDER) - NODE SPECIFICATION
+========================================================================
+
+This file details the route nodes (coordinates/stops) used inside the TransitWake map canvas simulator, alongside Node.js development server configuration specifications.
+
+PART 1: TRANSIT ROUTE NODE DIRECTORY
+------------------------------------
+Transit nodes represent physical stops mapped to (X, Y) canvas coordinates inside the simulated Nagpur transit map:
+
+A. METRO ORANGE LINE NODES (Khapri to Sitabuldi)
+   Node 1: Khapri Metro Station     (x: 80,  y: 190)
+   Node 2: Airport Metro Station    (x: 160, y: 170)
+   Node 3: Ujwal Nagar              (x: 220, y: 150)
+   Node 4: Jaiprakash Nagar         (x: 280, y: 130)
+   Node 5: Congress Nagar           (x: 340, y: 100)
+   Node 6: Sitabuldi Interchange    (x: 440, y: 60)
+
+B. STARBUS ROUTE 4 NODES (Sitabuldi to Hingna)
+   Node 1: Sitabuldi Terminal       (x: 100, y: 70)
+   Node 2: Jhansi Rani Square       (x: 150, y: 75)
+   Node 3: Dharampeth               (x: 200, y: 80)
+   Node 4: VNIT Gate                (x: 260, y: 95)
+   Node 5: Subhash Nagar            (x: 330, y: 110)
+   Node 6: Lokmanya Nagar           (x: 410, y: 130)
+   Node 7: Hingna MIDC              (x: 480, y: 160)
+
+C. CUSTOM AUTO/CAB NODES (Nagpur Station to IT Park)
+   Node 1: Nagpur Junction Stn      (x: 70,  y: 50)
+   Node 2: Ram Jhula                (x: 140, y: 60)
+   Node 3: Zero Mile                (x: 210, y: 70)
+   Node 4: Sitabuldi                (x: 280, y: 90)
+   Node 5: Deekshabhoomi            (x: 360, y: 120)
+   Node 6: IT Park Gayatri Nagar    (x: 460, y: 160)
+
+
+PART 2: NODE.JS DEVELOPMENT SETUP
+---------------------------------
+To test or serve this application locally using Node.js, configure the environment using the following steps:
+
+1. Initialize Package (npm):
+   Run the command below in the project root:
+   $ npm init -y
+
+2. Install Development Server (http-server or browser-sync):
+   To host the client-side files and bypass local CORS restrictions, install:
+   $ npm install --save-dev http-server
+
+3. Configure Dev Scripts (package.json):
+   Add the start script to your package.json:
+   {
+     "name": "journey-minder",
+     "version": "1.0.0",
+     "scripts": {
+       "start": "http-server -p 8080"
+     },
+     "devDependencies": {
+       "http-server": "^14.1.1"
+     }
+   }
+
+4. Execute Server:
+   Run the local server:
+   $ npm start
+
+5. Access Application:
+   Once the server starts, navigate to:
+   http://localhost:8080
